@@ -1,4 +1,4 @@
-##Wine Quality Prediction##
+**Wine Quality Prediction**
 
 **Purpuse of my Independent Project**
 
