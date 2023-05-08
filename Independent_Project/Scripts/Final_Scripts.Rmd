@@ -17,6 +17,25 @@ knitr::opts_chunk$set(echo = TRUE,
 
 This coding project's purpose is to create a machine learning model that can predict the quality of red wine based on its chemical properties. The "Wine Quality" dataset from the UCI Machine Learning Repository was used in this experiment. Data cleaning, exploratory data analysis, feature selection, model development and evaluation, and display of the results are all part of the project. This project relies heavily on tidyverse, randomForest, ggplot2, corrplot, gganimate, cowplot, and GGally libraries. This project's end result is a predictive model that may be used to classify the quality of new wines based on their chemical properties.
 
+# Data dictionary for the "Wine Quality" dataset used in the code:
+
+| Variable | Description |
+| --- | --- |
+| fixed.acidity | the amount of fixed acids (g/dm^3) |
+| volatile.acidity | the amount of volatile acids (g/dm^3) |
+| citric.acid | the amount of citric acid (g/dm^3) |
+| residual.sugar | the amount of residual sugar (g/dm^3) |
+| chlorides | the amount of chlorides (g/dm^3) |
+| free.sulfur.dioxide | the amount of free sulfur dioxide (mg/dm^3) |
+| total.sulfur.dioxide | the amount of total sulfur dioxide (mg/dm^3) |
+| density | the density (g/cm^3) |
+| pH | the pH level |
+| sulphates | the amount of sulphates (g/dm^3) |
+| alcohol | the alcohol content (vol. %) |
+| quality | the quality score (0-10) |
+
+
+
 # load necessary libraries
 ```{r}
 library(here) #For managing file paths
