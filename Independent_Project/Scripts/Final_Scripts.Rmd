@@ -1,0 +1,155 @@
+---
+title: " Wine Quality Prediction"
+date: "2023-05-09"
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE,
+                      message = FALSE,
+                      fig.path = "../Output/")
+```
+
+# Purpuse of my Independent Project
+
+This coding project's purpose is to create a machine learning model that can predict the quality of red wine based on its chemical properties. The "Wine Quality" dataset from the UCI Machine Learning Repository was used in this experiment. Data cleaning, exploratory data analysis, feature selection, model development and evaluation, and display of the results are all part of the project. This project relies heavily on tidyverse, randomForest, ggplot2, corrplot, gganimate, cowplot, and GGally libraries. This project's end result is a predictive model that may be used to classify the quality of new wines based on their chemical properties.
+
+# load necessary libraries
+```{r}
+library(here) #For managing file paths
+library(tidyverse)#For data manipulation and visualization
+library(ggplot2)#For advanced plotting
+library(dplyr)# For data manipulation
+library(corrplot)#For correlation plots
+library(randomForest)#classification and regression
+library(gganimate)# For creating animated plots
+library(cowplot)#For arranging plots
+library(GGally)#For creating scatterplot matrices
+```
+
+
+# Load the data
+```{r}
+wine <- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv", sep = ";")
+
+
+# Examine the structure of the data
+str(wine)
+
+# Calculate summary statistics for each variable
+summary(wine)
+
+# Check for missing values
+sum(is.na(wine))
+```
+# Create a histogram of the quality variable**
+```{r}
+ggplot(wine, aes(x = quality)) + # define ggplot object and aesthetic mapping
+  geom_histogram(binwidth = 1, fill = "#8B0000", color = "#FFFFFF", alpha = 0.8) + # add histogram layer with customized colors
+  labs(title = "Histogram of Wine Quality", x = "Quality", y = "Frequency") + # add plot titles and axis labels
+  theme_minimal() + # set the theme to minimal
+  theme(plot.title = element_text(size = 16, face = "bold"), # customize the plot title font
+        axis.title = element_text(size = 12), # customize the axis title font
+        axis.text = element_text(size = 10), # customize the axis label font
+        panel.grid.major = element_blank(), # remove major gridlines
+        panel.grid.minor = element_blank(), # remove minor gridlines
+        panel.border = element_blank(), # remove plot border
+        legend.position = "none") # remove legend
+
+```
+# Create a scatterplot matrix of the chemical variables
+
+```{r}
+#First Define variable names and columns for the scatterplot matrix
+variable_names <- c(
+  "fixed acidity",
+  "volatile acidity",
+  "citric acid",
+  "residual sugar",
+  "chlorides",
+  "free sulfur dioxide",
+  "total sulfur dioxide",
+  "density",
+  "pH",
+  "sulphates",
+  "alcohol",
+  "quality"
+)
+cols <- c("fixed.acidity", "volatile.acidity", "citric.acid", "residual.sugar", "chlorides", "free.sulfur.dioxide", "total.sulfur.dioxide", "density", "pH", "sulphates", "alcohol")
+
+# Plot the scatterplot matrix using ggplot2
+ggplot(wine, aes_string(x = cols[1], y = cols[9])) + # Select columns for acidity and pH
+  geom_point(alpha = 0.3, size = 1.5) + # Add scatterplot points with transparency and size
+  facet_wrap(~ quality) + # Add facetting by quality
+  labs(title = "Scatterplot Matrix of Acidity and pH",
+       x = variable_names[1], y = variable_names[9], # Label axes with variable names
+       subtitle = paste("Quality:", unique(wine$quality)),
+       strip.text = element_text(size = 12))
+```
+# Split the data into training and testing sets
+```{r}
+set.seed(123)#sets the seed of the random number generator to ensure reproducibility of the results.
+train_idx <- sample(nrow(wine), size = 0.7 * nrow(wine)) #generates a vector of indices for the training set by randomly sampling 70% of the rows of the wine dataset
+train <- wine[train_idx, ] #reates a new data frame called train consisting of the rows indexed by train_idx.
+test <- wine[-train_idx, ]#creates a new data frame called test consisting of the rows not included in the training set.
+```
+
+
+# Train a random forest model using the randomForest package
+```{r}
+set.seed(123)
+rf_model <- randomForest(quality ~ ., data = train, importance = TRUE, ntree = 500)
+rf_model
+```
+# Make predictions on the test set using the trained model
+
+```{r}
+test_pred <- predict(rf_model, newdata = test)
+```
+
+# Create variable importance plot
+```{r}
+var_imp <- ggplot(data = data.frame(importance = rf_model$importance[order(rf_model$importance, decreasing = TRUE)], 
+                                     variables = colnames(rf_model$importance)[order(rf_model$importance, decreasing = TRUE)]),
+                  aes(x = reorder(variables, -importance), y = importance, fill = importance)) +
+  geom_bar(stat = "identity", color = "black") +# Add bar plot of variable importance
+  scale_fill_gradient(low = "lightblue", high = "darkblue") + # Add color gradient
+  labs(title = "Variable Importance Plot", x = "Variable", y = "Importance") +
+  theme_minimal() + # Use minimal theme
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 10),
+        axis.title = element_text(size = 12),
+        plot.title = element_text(size = 16, face = "bold"))
+
+print(var_imp)# Print the variable importance plot
+
+# Visualize the predicted vs actual quality
+test_results <- data.frame(actual = test$quality, predicted = test_pred)
+p1 <- ggplot(test_results, aes(x = actual, y = predicted)) +
+  geom_point(alpha = 0.7, size = 3, color = "#1f77b4") +# Add scatter plot of predicted vs actual values
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "#d62728") +# Add a diagonal line of identity
+  labs(title = "Predicted vs Actual Wine Quality", x = "Actual Quality", y = "Predicted Quality") +
+  theme_minimal() + # Use minimal theme
+  theme(axis.title = element_text(size = 12),
+        plot.title = element_text(size = 16, face = "bold"))
+
+print(p1)
+
+```
+
+
+# Create an animated scatterplot of the chemical variables
+
+```{r}
+cols <- c("fixed.acidity", "volatile.acidity", "citric.acid", "residual.sugar", "chlorides", "free.sulfur.dioxide", "total.sulfur.dioxide", "density", "pH", "sulphates", "alcohol")
+
+p2 <- ggplot(wine, aes_string(x = cols[1], y = cols[2], frame = "quality")) +
+  geom_point() +
+  labs(title = "Scatterplot of Chemical Variables by Quality", x = cols[1], y = cols[2]) +
+  transition_states(states = quality, transition_length = 1, state_length = 2) +
+  ease_aes("linear")
+
+animate(p2)
+```
