@@ -78,6 +78,14 @@ ggplot(wine, aes(x = quality)) +
         panel.border = element_blank(), 
         legend.position = "none")
 ```
+**The resulting plot will show the frequency distribution of wine quality ratings on a scale from 1 to 10, with each bar representing the number of wines falling into each rating bin (in this case, a binwidth of 1 is used).** 
+
+
+
+
+
+
+
 # Create a scatterplot matrix of the chemical variables
 
 ```{r}
@@ -171,6 +179,8 @@ p2 <- ggplot(wine, aes_string(x = cols[1], y = cols[2], frame = "quality")) +
 
 animate(p2)
 ```
+
+
 # Results
 Our final model achieves a high accuracy of 87% in predicting the quality of red wine based on its chemical properties. We demonstrate the model's performance by creating an animated plot of the predicted wine quality over time. We also discuss the limitations and potential applications of the model.
 
